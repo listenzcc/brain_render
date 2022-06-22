@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html;" charset="utf-8" />
+    <title>Brain Render</title>
+
+    <link rel="stylesheet" href="static/style.css" />
+    <script type="text/javascript" src="static/before.js"></script>
+    <script type="text/javascript" src="static/d3.v7.min.js"></script>
+</head>
+
+<body>
+    <div>
+        <h1>Brain Render</h1>
+        <div>
+            <p>Loaded on: {{ load_on_time }}</p>
+        </div>
+    </div>
+
+    <div>
+        <div>
+            <h2>
+                <span>Atlas:</span>
+                <span id="h2-1"></span>
+            </h2>
+        </div>
+
+        <div>
+            <canvas id="canvas-1" width="600" height="600" style="width: 600px; height: 600px"></canvas>
+        </div>
+
+        <div>
+            <input id="atlas-selector-1" type="text" list="atlas-list-1" placeholder="Atlas">
+            <datalist id="atlas-list-1">
+                <option>A1</option>
+                <option>A2</option>
+            </datalist>
+
+            <input id="input-degree-x" class="DegreeInput" type="range" min="-180" max="180" value="0" step="10" />
+            <input id="input-degree-y" class="DegreeInput" type="range" min="-180" max="180" value="0" step="10" />
+            <input id="input-degree-z" class="DegreeInput" type="range" min="-180" max="180" value="0" step="10" />
+
+        </div>
+    </div>
+
+    <script type="text/javascript" src="static/after.js"></script>
+</body>
+
+</html>
