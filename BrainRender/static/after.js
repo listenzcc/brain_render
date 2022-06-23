@@ -2,7 +2,9 @@ console.log("After js is running");
 
 {
     const myCanvas = document.getElementById("canvas-1");
+    const myCanvas2 = document.getElementById("canvas-2");
     const myContext = myCanvas.getContext("2d");
+    const myContext2 = myCanvas2.getContext("2d");
 
     const renderOptions = {
         x: 0,
@@ -13,6 +15,7 @@ console.log("After js is running");
         z2: 0,
         select: 10000,
         defaultSelect: 10000,
+        slice: 50,
         atlas: "----",
         defaultAtlas: "----",
     };
@@ -22,10 +25,11 @@ console.log("After js is running");
         renderOptions["x"] = document.getElementById("input-degree-x").value;
         renderOptions["y"] = document.getElementById("input-degree-y").value;
         renderOptions["z"] = document.getElementById("input-degree-z").value;
+        renderOptions["slice"] = document.getElementById("input-slice").value;
 
-        const { x, y, z, x2, y2, z2, select } = renderOptions;
+        const { x, y, z, x2, y2, z2, select, slice } = renderOptions;
 
-        const src = `./volumeRender?degX=${x}&degY=${y}&degZ=${z}&degX2=${x2}&degY2=${y2}&degZ2=${z2}&select=${select}`;
+        const src = `./volumeRender?degX=${x}&degY=${y}&degZ=${z}&degX2=${x2}&degY2=${y2}&degZ2=${z2}&select=${select}&slice=${slice}`;
         return src;
     };
 
@@ -36,24 +40,53 @@ console.log("After js is running");
     }
 
     function volumeRender(event) {
-        var myImage = new Image();
+        // Render the volume rendering
 
-        const src = mkSrc();
+        {
+            const myImage = new Image();
 
-        myImage.src = src;
+            const src = mkSrc();
 
-        myImage.onload = function (event) {
-            const width = myCanvas.width,
-                height = (myCanvas.width / myImage.width) * myImage.height;
+            myImage.src = src;
 
-            const x = 0,
-                y =
-                    height < myCanvas.height
-                        ? (myCanvas.height - height) / 2
-                        : 0;
+            myImage.onload = function (event) {
+                const width = myCanvas.width,
+                    height = (myCanvas.width / myImage.width) * myImage.height;
 
-            myContext.drawImage(myImage, x, y, width, height);
-        };
+                const x = 0,
+                    y =
+                        height < myCanvas.height
+                            ? (myCanvas.height - height) / 2
+                            : 0;
+
+                myContext.drawImage(myImage, x, y, width, height);
+            };
+        }
+
+        // Render the slice rendering
+
+        {
+            const myImage = new Image();
+
+            let src = mkSrc().replace("volumeRender", "sliceRender");
+
+            myImage.src = src;
+
+            myImage.onload = function (event) {
+                const width = myCanvas2.width,
+                    height = (myCanvas2.width / myImage.width) * myImage.height;
+
+                const x = 0,
+                    y =
+                        height < myCanvas2.height
+                            ? (myCanvas2.height - height) / 2
+                            : 0;
+
+                const s = 91 / 109;
+
+                myContext2.drawImage(myImage, x, y, width, height);
+            };
+        }
 
         updateDoms();
     }
@@ -61,7 +94,9 @@ console.log("After js is running");
     // A proper initial and add event listener
     {
         volumeRender();
-        for (let input of document.getElementsByClassName("DegreeInput")) {
+        for (let input of document.getElementsByClassName(
+            "TriggerVolumeRender"
+        )) {
             input.addEventListener("input", volumeRender);
         }
     }
@@ -158,22 +193,25 @@ console.log("After js is running");
                 const dx = clientX - dragOptions.x,
                     dy = clientY - dragOptions.y;
 
+                const scaler = d3
+                    .scaleLinear()
+                    .domain([0, myCanvas.width])
+                    .range([0, 540]);
+
+                const resolution = myCanvas.width / 20;
+
                 if (
-                    Math.abs(dx - dragOptions.dx) > 50 ||
-                    Math.abs(dy - dragOptions.dy) > 50
+                    Math.abs(dx - dragOptions.dx) > resolution ||
+                    Math.abs(dy - dragOptions.dy) > resolution
                 ) {
                     // Mouse drag 100 pixels to flip 45 degrees
-                    const scaler = d3
-                        .scaleLinear()
-                        .domain([0, 100])
-                        .range([0, 45]);
                     const degX = scaler(dx),
                         degY = scaler(dy);
 
                     renderOptions["z2"] = degX;
                     renderOptions["y2"] = -degY;
 
-                    console.log({ dx, dy, degX, degY });
+                    // console.log({ dx, dy, degX, degY });
 
                     dragOptions.dx = dx;
                     dragOptions.dy = dy;

@@ -110,6 +110,7 @@ class BrainRender(object):
     def __init__(self):
         self.load_mat()
         self.load_atlas_table()
+        self.render(10000, (0, 0, 0))
 
     def load_mat(self):
         '''
@@ -123,8 +124,8 @@ class BrainRender(object):
         mat_brain = nib.load(brain_raw_path).get_fdata()
         mat_atlas = nib.load(atlas_raw_path).get_fdata()
 
-        self.brain = mat_brain
-        self.atlas = mat_atlas
+        self.brain = mat_brain[:91, 9:9+91, :91]
+        self.atlas = mat_atlas[:91, 9:9+91, :91]
         self.shape_3d = mat_brain.shape
         self.atlas_unique = np.unique(mat_atlas)
 
@@ -136,21 +137,7 @@ class BrainRender(object):
         '''
         self.atlas_table = mk_atlas_table(xml_raw_path=xml_raw_path)
 
-    def render(self, select, degrees, degrees_2=None):
-        '''
-        Render the brain using the volume rendering method.
-
-        Args:
-            - select: The atlas of interest, it will be marked as red color;
-            - degrees: The degrees of flipping, (a, b, c) refers flipping degrees in the direction of the 3 axes;
-            - degrees_2: The rotation AFTER the degrees.
-
-        Returns:
-            Something very interesting.
-            It is under development, so I am not sure.
-        '''
-        start = time.time()
-
+    def rotate(self, select, degrees, degrees_2):
         brain = self.brain.copy()
         brain *= 255 / np.max(brain)
 
@@ -167,6 +154,58 @@ class BrainRender(object):
                 rotate(brain, j, deg)
                 rotate(atlas, j, deg)
 
+        return brain, atlas
+
+    def slice(self, select, degrees, degrees_2=None, slice=50):
+        start = time.time()
+
+        brain, atlas = self.rotate(select, degrees, degrees_2)
+
+        print('Stage 1, Cost {} seconds'.format(time.time() - start))
+
+        # Volume view
+        s = 0.5
+
+        brain *= s
+        atlas *= s
+
+        img1 = brain[:, slice].transpose()[::-1]
+        img2 = atlas[:, slice].transpose()[::-1]
+
+        # img1 *= 255 / np.max(img1) * 0.8
+        # if np.max(img2) > 0:
+        #     img2 *= 255 / np.max(img2) * 0.7
+
+        img3 = np.array([img1 + img2, img1, img1]).transpose((1, 2, 0))
+
+        img3[img3 > 255] = 255
+        img3 = img3.astype(np.uint8)
+
+        success, arr = cv2.imencode(
+            ext='.png', img=cv2.cvtColor(img3, cv2.COLOR_RGB2BGR))
+
+        if not success:
+            print('Something went wrong, the img fails on imencode')
+
+        return arr.tostring()
+
+    def render(self, select, degrees, degrees_2=None, slice=50):
+        '''
+        Render the brain using the volume rendering method.
+
+        Args:
+            - select: The atlas of interest, it will be marked as red color;
+            - degrees: The degrees of flipping, (a, b, c) refers flipping degrees in the direction of the 3 axes;
+            - degrees_2: The rotation AFTER the degrees.
+
+        Returns:
+            Something very interesting.
+            It is under development, so I am not sure.
+        '''
+        start = time.time()
+
+        brain, atlas = self.rotate(select, degrees, degrees_2)
+
         print('Stage 1, Cost {} seconds'.format(time.time() - start))
 
         # Volume view
@@ -181,7 +220,7 @@ class BrainRender(object):
         img1 = np.mean(brain, axis=axis).transpose()[::-1]
         img2 = np.mean(atlas, axis=axis).transpose()[::-1]
 
-        img1 *= 255 / np.max(img1) * 0.5
+        img1 *= 255 / np.max(img1) * 0.8
         if np.max(img2) > 0:
             img2 *= 255 / np.max(img2) * 0.7
 
@@ -189,6 +228,8 @@ class BrainRender(object):
 
         img3[img3 > 255] = 255
         img3 = img3.astype(np.uint8)
+
+        img3[:10, slice] = [0, 255, 255]
 
         success, arr = cv2.imencode(
             ext='.png', img=cv2.cvtColor(img3, cv2.COLOR_RGB2BGR))

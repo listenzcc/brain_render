@@ -27,20 +27,35 @@
         </div>
 
         <div>
-            <canvas id="canvas-1" width="600" height="600" style="width: 600px; height: 600px"></canvas>
+            <div>
+                <canvas id="canvas-1" width="600" height="600" style="width: 600px; height: 600px"></canvas>
+                <canvas id="canvas-2" width="600" height="600" style="width: 600px; height: 600px"></canvas>
+            </div>
         </div>
 
         <div>
+            <h2> Controller:</h2>
             <input id="atlas-selector-1" type="text" list="atlas-list-1" placeholder="Atlas">
             <datalist id="atlas-list-1">
                 <option>A1</option>
                 <option>A2</option>
             </datalist>
 
-            <input id="input-degree-x" class="DegreeInput" type="range" min="-180" max="180" value="0" step="10" />
-            <input id="input-degree-y" class="DegreeInput" type="range" min="-180" max="180" value="0" step="10" />
-            <input id="input-degree-z" class="DegreeInput" type="range" min="-180" max="180" value="0" step="10" />
+            <span>x: </span>
+            <input id="input-degree-x" class="TriggerVolumeRender" type="range" min="-180" max="180" value="0"
+                step="5" />
+            <span>y: </span>
+            <input id="input-degree-y" class="TriggerVolumeRender" type="range" min="-180" max="180" value="0"
+                step="5" />
+            <span>z: </span>
+            <input id="input-degree-z" class="TriggerVolumeRender" type="range" min="-180" max="180" value="0"
+                step="5" />
+            <span>slice: </span>
+            <input id="input-slice" class="TriggerVolumeRender" type="range" min="0" max="90" value="50" step="2" />
 
+        </div>
+
+        <div>
         </div>
     </div>
 

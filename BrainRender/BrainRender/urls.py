@@ -22,5 +22,6 @@ urlpatterns = [
     path('', view.index),
     path('index.html', view.index),
     path('volumeRender', view.volume_render),
+    path('sliceRender', view.slice_render),
     path('atlasTable', view.atlas_table),
 ]

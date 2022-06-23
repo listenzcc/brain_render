@@ -1,3 +1,7 @@
 div {
     border-top: solid gray;
 }
+
+input {
+    vertical-align: middle;
+}

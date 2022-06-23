@@ -46,6 +46,7 @@ def volume_render(request):
         params[e] = request.GET[e]
 
     kwargs = dict(
+        slice=int(params.get('slice', 50)),
         select=int(params.get('select', 31)),
         degrees=(
             int(float(params.get('degX', 10))),
@@ -62,6 +63,38 @@ def volume_render(request):
     print(kwargs)
 
     content = brain_render.render(**kwargs)
+    content_type = "image/png"
+
+    return HttpResponse(content, content_type)
+
+
+# %%
+def slice_render(request):
+    ''' PNG bytes of the slice '''
+    print(request)
+
+    params = dict()
+    for e in request.GET:
+        params[e] = request.GET[e]
+
+    kwargs = dict(
+        slice=int(params.get('slice', 50)),
+        select=int(params.get('select', 31)),
+        degrees=(
+            int(float(params.get('degX', 10))),
+            int(float(params.get('degY', 20))),
+            int(float(params.get('degZ', 30))),
+        ),
+        degrees_2=(
+            int(float(params.get('degX2', 0))),
+            int(float(params.get('degY2', 0))),
+            int(float(params.get('degZ2', 0))),
+        )
+    )
+
+    print(kwargs)
+
+    content = brain_render.slice(**kwargs)
     content_type = "image/png"
 
     return HttpResponse(content, content_type)
