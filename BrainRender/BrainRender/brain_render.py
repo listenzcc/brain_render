@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 import nibabel as nib
 
+import scipy.ndimage as ndimage
+
 from pathlib import Path
 from tqdm.auto import tqdm
 from bs4 import BeautifulSoup as bs
@@ -103,6 +105,25 @@ def rotate(mat, axis, deg, copy=False, verbose=False):
             mat[:, :, j] = imutils.rotate(mat[:, :, j], angle=deg)
 
     return mat
+
+# %%
+
+
+def enhance_texture(mat, copy=True):
+    kernel = np.ones((3, 3, 3))
+    threshold = 18
+
+    if copy:
+        mat = mat.copy()
+
+    normalize = mat / np.max(mat)
+
+    mask = ndimage.convolve(normalize, kernel)
+
+    mat[mask > threshold] = 0
+
+    return mat
+
 # %%
 
 
@@ -125,6 +146,9 @@ class BrainRender(object):
         mat_atlas = nib.load(atlas_raw_path).get_fdata()
 
         self.brain = mat_brain[:91, 9:9+91, :91]
+
+        self.brain = enhance_texture(self.brain)
+
         self.atlas = mat_atlas[:91, 9:9+91, :91]
         self.shape_3d = mat_brain.shape
         self.atlas_unique = np.unique(mat_atlas)

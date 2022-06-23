@@ -1,6 +1,7 @@
 # %%
 import time
 import numpy as np
+import scipy.ndimage as ndimage
 
 import imutils
 # from PIL import Image
@@ -16,6 +17,27 @@ from data import mat_atlas, mat_brain
 print(np.unique(mat_atlas))
 print(mat_atlas.shape)
 print(mat_brain.shape)
+
+# %%
+# Enhance texture
+
+mat_raw = mat_brain.copy()
+
+mat_raw /= np.max(mat_raw)
+
+kernel = np.ones((3, 3, 3))
+
+mat = ndimage.convolve(mat_raw, kernel)
+
+mat_raw[mat > 18] = 0
+
+# fig = px.imshow(mat_raw[50])
+# fig.show()
+
+# fig = px.imshow(mat[50])
+# fig.show()
+
+mat_brain = mat_raw
 
 # %%
 
